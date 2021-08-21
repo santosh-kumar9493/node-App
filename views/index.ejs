@@ -1,0 +1,82 @@
+
+<html lang="en">
+
+<%- include('./partials/head.ejs') %>
+
+<body>
+
+    <%- include('./partials/nav.ejs') %>
+    <div class="container" id="itemContainer">
+        <ul class="collection with-header">
+            <% if(items.length>0){%>
+            <% items.forEach( item => { %>
+                <li class="collection-item">
+                    <div><a href="/items/<%= item._id%>"><%= item.name %>$<%= item.price %></a><a href="#!" class="secondary-content"><i class="material-icons" data-id="<%= item._id%>">delete</i><i class="material-icons modal-trigger" href="#modal1" data-id="<%= item._id%>">edit</i></a></div>
+                </li>
+            <% }); %>
+            <% } else {%>
+                <li> No Items available </li> 
+                <% } %>
+            
+        </ul>
+        <div id="modal1" class="modal">
+            <div class="modal-content">
+                <h4>Edit Form</h4>
+                <form id="edit_form">
+                    <input type="text" placeholder="Enter Item" name="name">
+                    <input type="number" placeholder="Enter Price" name="price">
+                    <button class="edit btn">Save</button>
+                </form>
+            </div>
+          </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+            var updateId;
+            let itemContainer= document.getElementById('itemContainer');
+            var edit_form= document.getElementById('edit_form');
+            edit_form.onsubmit =async function(e){
+                e.preventDefault();
+                let data = new FormData(edit_form);
+                let response = await fetch(`/items/${updateId}`,{
+                    method : 'PUT', 
+                    body : new URLSearchParams(data),
+                    header : new Headers({
+                        'Content-type' : 'application/x-www-form-urlencoded; charset=UTF-8'
+                    })
+                });
+                let result= await response.json();
+                edit_form.reset();
+                
+                window.location.reload();
+
+
+            }
+            itemContainer.addEventListener('click',function(e){
+                let tar = e.target.textContent;
+               
+                console.log(e.target.dataset);
+                if(tar==='delete'){
+                    console.log(e.target.dataset.id);
+                    id=e.target.dataset.id;
+                    const endpoint=`/items/${id}`;
+                    fetch(endpoint,{method : 'DELETE'})
+                        .then((res)=>res.json())
+                        .then(data => window.location.assign(`${data.redirect}`))
+                        .catch(err => console.log(err));
+                }
+                if(tar==='edit'){
+                    updateId = e.target.dataset.id;
+                    console.log(e.target.dataset.id);
+                }
+            })
+          document.addEventListener('DOMContentLoaded', function() {
+                var elems = document.querySelectorAll('.modal');
+                var instances = M.Modal.init(elems);
+            });
+    </script>
+
+</body>
+
+
+</html>
